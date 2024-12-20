@@ -1,0 +1,60 @@
+name: girls_grivince
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  lottie: ^3.2.0
+  rename_app: ^1.6.1
+  url_launcher: ^6.3.1
+  permission_handler: ^11.3.1
+  camera: ^0.11.0+2
+  image_picker: ^1.1.2
+  get: ^4.6.6
+  http: ^1.2.2
+  email_auth: ^2.0.0
+  shared_preferences: ^2.3.3
+  audioplayers: ^6.1.0
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  audio_waveforms: ^1.2.0
+  flutter_lints: ^5.0.0
+  geolocator: ^13.0.2
+  jwt_decoder: ^2.0.1
+  provider: ^6.1.2
+  flutter_native_splash: ^2.4.3
+  record: ^5.2.0
+  just_audio: ^0.9.42
+  youtube_player_flutter: ^9.1.1
+  video_player: ^2.9.2
+  http_parser: ^4.1.1
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter 
+
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/img/ 
+ 
+
+flutter_native_splash:
+  color: "#A93DE7" # Background color
+  image: assets/img/mainicon.png # Path to your splash screen image
+  android: true # Enable for Android
+  ios: true # Enable for iOS
+  web: false # Set to true if you want to configure it for web
+  android_gravity: center # Adjust image position
+  ios_content_mode: center # Adjust content mode for iOS 
