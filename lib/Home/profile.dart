@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:girls_grivince/Login/loginMain.dart';
 import 'package:girls_grivince/Models/UserModel.dart';
 import 'package:girls_grivince/Models/UserModel/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class Profile extends StatefulWidget {
   @override
@@ -12,6 +15,7 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   bool _isEditingName = false;
+  bool _isLoading = false;
   late TextEditingController _nameController;
 
   @override
@@ -25,6 +29,62 @@ class _ProfileState extends State<Profile> {
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  Future<void> editName({required String name}) async {
+    if (name.isEmpty) {
+      showSnackbar('Username cannot be empty.');
+      return;
+    }
+
+    final token = await getToken();
+    final url = Uri.parse(
+        'https://tech-hackathon-glowhive.onrender.com/api/user/edit/username');
+    final body = {"username": name};
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: json.encode(body),
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        final userModel = Provider.of<UserModel>(context, listen: false);
+        userModel.updateName(name);
+        showSnackbar('Name updated successfully.');
+      } else {
+        showSnackbar(responseData['message'] ?? 'Failed to update name.');
+      }
+    } catch (e) {
+      showSnackbar('An error occurred. Check your connection and try again.');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void showSnackbar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -58,11 +118,12 @@ class _ProfileState extends State<Profile> {
                           label: 'Name',
                           controller: _nameController,
                           isEditable: _isEditingName,
+                          isLoading: _isLoading,
                           onEditPressed: () {
+                            if (_isEditingName && !_isLoading) {
+                              editName(name: _nameController.text);
+                            }
                             setState(() {
-                              if (_isEditingName) {
-                                userModel.updateName(_nameController.text);
-                              }
                               _isEditingName = !_isEditingName;
                             });
                           },
@@ -191,6 +252,7 @@ class _ProfileState extends State<Profile> {
     required String label,
     required TextEditingController controller,
     required bool isEditable,
+    required bool isLoading,
     required VoidCallback onEditPressed,
   }) {
     return Row(
@@ -223,10 +285,19 @@ class _ProfileState extends State<Profile> {
         ),
         GestureDetector(
           onTap: onEditPressed,
-          child: Icon(
-            isEditable ? Icons.check : Icons.edit,
-            color: Colors.purple,
-          ),
+          child: isLoading
+              ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.purple,
+                  ),
+                )
+              : Icon(
+                  isEditable ? Icons.check : Icons.edit,
+                  color: Colors.purple,
+                ),
         ),
       ],
     );
